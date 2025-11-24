@@ -1,0 +1,11 @@
+{
+  "name": "server2",
+  "targets": {
+    "serve": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node apps/server_copy/listen.js"
+      }
+    }
+  }
+}
