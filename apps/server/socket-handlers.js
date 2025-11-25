@@ -39,6 +39,12 @@ export default function registerHandlers(io, socket) {
     socket.broadcast.emit('draw', data);
   });
 
+  // Testing event connection
+//   socket.on('test-event', (data) => {
+//     console.log('Received from client:', data);
+//     socket.emit('test-response', {reply: 'Hello client!'})
+//   })
+
   socket.on('disconnect', () => {
     // remove player from all rooms
     for (const code in rooms) {
@@ -50,10 +56,4 @@ export default function registerHandlers(io, socket) {
     }
     console.log('User disconnected', socket.id);
   });
-
-  //   socket.on('chat message', (msg) => {
-//     console.log('message from client:', msg);
-
-//     io.emit('chat message', msg);
-//   });
 }
