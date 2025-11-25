@@ -7,7 +7,7 @@
 
 const { rooms, createRoom, joinRoom, leaveRoom } = require('./roomManager');
 
-export function registerHandlers(io, socket) {
+function registerHandlers(io, socket) {
 //   socket.on('chat message', (msg) => {
 //     console.log('message from client:', msg);
 
@@ -49,3 +49,5 @@ export function registerHandlers(io, socket) {
     console.log('User disconnected', socket.id);
   });
 }
+
+module.exports = registerHandlers;
