@@ -7,7 +7,9 @@
     "all": "nx run-many --target=serve --projects=server,server2 --parallel"
   },
   "private": true,
-  "dependencies": {},
+  "dependencies": {
+    "cors": "^2.8.5"
+  },
   "devDependencies": {
     "@nx/js": "22.1.1",
     "@swc-node/register": "~1.9.1",
