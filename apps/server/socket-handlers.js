@@ -73,3 +73,5 @@ return
 }
 
 module.exports = registerHandlers;
+
+module.exports = registerHandlers;
