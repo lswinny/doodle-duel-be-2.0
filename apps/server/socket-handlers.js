@@ -27,7 +27,11 @@ export default function registerHandlers(io, socket) {
   socket.emit('Invalid or expired token')
   return;
   }
-    if (!rooms[roomCode]) return
+    if (!rooms[roomCode]) {
+      socket.emit("error", "Room not found")
+      return
+    }
+
     joinRoom(roomCode, socket.id, nickname);
     socket.join(roomCode);
     io.to(roomCode).emit('player-list', rooms[roomCode].players);
@@ -40,10 +44,10 @@ export default function registerHandlers(io, socket) {
   });
 
   // Testing event connection
-//   socket.on('test-event', (data) => {
-//     console.log('Received from client:', data);
-//     socket.emit('test-response', {reply: 'Hello client!'})
-//   })
+  // socket.on('test-event', (data) => {
+  //   console.log('Received from client:', data);
+  //   socket.emit('test-response', {reply: 'Hello client!'})
+  // })
 
   socket.on('disconnect', () => {
     // remove player from all rooms
