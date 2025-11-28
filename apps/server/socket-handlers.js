@@ -61,10 +61,46 @@ export default function registerHandlers(io, socket) {
     io.emit('lobby:rooms-updated', Object.keys(rooms));
   });
 
-  socket.on('draw', (data) => {
-    console.log(':pencil2: draw event from', socket.id, data);
-    socket.broadcast.emit('draw', data);
-  });
+  socket.on("get-room-data", ({roomCode}) => {
+    const room = rooms[roomCode];
+
+    if(!room){
+      socket.emit("room:data", null);
+      return;
+    }
+
+    socket.emit("room:data", {
+      host: room.host,
+      players: room.players,
+      submissions: room.submissions
+    })
+  })
+
+  socket.on("start-game", ({roomCode, token}) => {
+    const userData = checkIfTokenIsValid(token);
+    if(!userData){
+      socket.emit("Invalid or expired token");
+      return;
+    }
+
+    const room = rooms[roomCode];
+    if(!room){
+      socket.emit("error", "Room not found");
+      return;
+    }
+
+    if (socket.id !== room.host){
+      socket.emit("error","Only the host can start the game");
+      return;
+    }
+
+    io.to(roomCode).emit("game-started", {roomData: {roomCode, ...room}});
+  })
+
+  // socket.on('draw', (data) => {
+  //   console.log(':pencil2: draw event from', socket.id, data);
+  //   socket.broadcast.emit('draw', data);
+  // });
 
   socket.on('disconnect', () => {
     for (const code in rooms) {
