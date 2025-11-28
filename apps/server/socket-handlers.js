@@ -41,16 +41,21 @@ export default function registerHandlers(io, socket) {
       socket.emit('Invalid or expired token');
       return;
     }
-    if (!rooms[roomCode]) {
+
+    const room = rooms[roomCode]
+    if (!room) {
       socket.emit('error', 'Room not found');
       return;
     }
 
     joinRoom(roomCode, socket.id, nickname);
     socket.join(roomCode);
-    io.to(roomCode).emit('player-list', {
-      players: rooms[roomCode].players,
-      hostId: rooms[roomCode].hostId,
+
+    io.to(roomCode).emit('room:data', {
+      roomCode,
+      host: room.host,
+      players: room.players,
+      submissions: room.submissions
     });
     console.log(`${nickname} joined room ${roomCode}`);
     io.emit('lobby:rooms-updated', Object.keys(rooms));
