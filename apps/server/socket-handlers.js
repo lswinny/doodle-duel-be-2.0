@@ -40,7 +40,10 @@ export default function registerHandlers(io, socket) {
 
     joinRoom(roomCode, socket.id, nickname);
     socket.join(roomCode);
-    io.to(roomCode).emit('player-list', rooms[roomCode].players);
+    io.to(roomCode).emit('player-list', {
+      players: rooms[roomCode].players,
+      hostId: rooms[roomCode].hostId,
+    });
     console.log(`${nickname} joined room ${roomCode}`);
     io.emit('lobby:rooms-updated', Object.keys(rooms));
   });
@@ -50,29 +53,28 @@ export default function registerHandlers(io, socket) {
     socket.broadcast.emit('draw', data);
   });
 
-socket.on('disconnect', () => {
-  for (const code in rooms) {
-    const room = rooms[code];
+  socket.on('disconnect', () => {
+    for (const code in rooms) {
+      const room = rooms[code];
 
-    if (room.players[socket.id]) {
-      if (room.hostId === socket.id) {
-        // Host left, close room
-        delete rooms[code];
-        io.to(code).emit('roomClosed', { roomCode: code });
-        socket.leave(code);
-        io.emit('lobby:rooms-updated', Object.keys(rooms));
-        console.log(`Host left, room ${code} closed`);
-      } else {
-        // Regular player left
-        leaveRoom(code, socket.id);
-        io.to(code).emit('player-list', {
-          players: room.players,
-          hostId: room.hostId
-        });
-        console.log(`Player left room ${code}`);
+      if (room.players[socket.id]) {
+        if (room.hostId === socket.id) {
+          // Host left, close room
+          delete rooms[code];
+          io.to(code).emit('roomClosed', { roomCode: code });
+          socket.leave(code);
+          io.emit('lobby:rooms-updated', Object.keys(rooms));
+          console.log(`Host left, room ${code} closed`);
+        } else {
+          // Regular player left
+          leaveRoom(code, socket.id);
+          io.to(code).emit('player-list', {
+            players: room.players,
+            hostId: room.hostId,
+          });
+          console.log(`Player left room ${code}`);
+        }
       }
     }
-  }
-});
-
+  });
 }
