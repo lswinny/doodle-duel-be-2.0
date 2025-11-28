@@ -1,28 +1,23 @@
-import { generateRoomCode } from "./utils/roomCode.js";
+export const rooms = {};
 
-// "MODEL" (rather than "Controller" - socket-handler)
-const rooms = {};
-const roomCode = generateRoomCode()
-
-export function createRoom(roomCode, hostId) {
+export function createRoom(roomCode, hostId, nickname) {
     rooms[roomCode] = {
         host: hostId,
-        players: {},    //{socketId: {nickname}}
+        players: {[hostId]: {nickname}},    //{socketId: {nickname}}
         submissions: []
     };
 }
 
 export function joinRoom(roomCode, socketId, nickname){
-    if (!rooms[roomCode]) return false;
-
-    rooms[roomCode].players[socketId] = {nickname};
-    return true;
+    const room = rooms[roomCode]
+  if (!room) return;
+  room.players[socketId] = { nickname };
 }
 
 export function leaveRoom(roomCode, socketId){
-    if (!rooms[roomCode]) return;
-    
-    delete rooms[roomCode].players[socketId];
+    const room = rooms[roomCode];
+    if (!room) return;
+    delete room.players[socketId];
 
     //remove room if empty
     if (Object.keys(rooms[roomCode].players).length === 0) {
