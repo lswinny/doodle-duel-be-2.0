@@ -18,7 +18,7 @@ export default function registerHandlers(io, socket) {
     }
      const roomCode = generateRoomCode(); 
      createRoom(roomCode, socket.id);
-     socket.emit('roomCreated', roomCode);
+     socket.emit('roomCreated', roomCode, rooms[roomCode]);
   })
 
   socket.on('join-room', ({ roomCode, nickname, token }) => {
