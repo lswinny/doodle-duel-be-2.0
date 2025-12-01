@@ -94,7 +94,7 @@ export default function registerHandlers(io, socket) {
       return;
     }
 
-    io.to(roomCode).emit("game-started", {roomData: {roomCode, ...room}});
+    io.to(roomCode).emit("game-started", {roomCode,roomData: {...room}});
   })
 
   // socket.on('draw', (data) => {
