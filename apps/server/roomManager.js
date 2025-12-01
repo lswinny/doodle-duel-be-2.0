@@ -2,6 +2,7 @@ export const rooms = {};
 
 import { judgeDrawingsWithAI } from "./utils/aiJudge.js";
 import fs from "fs";
+import { generateRoomCode } from "./utils/roomCode.js";
 
 // Load the JSON file manually
 const prompts = JSON.parse(
@@ -9,10 +10,9 @@ const prompts = JSON.parse(
 );
 
 // "MODEL" (rather than "Controller" - socket-handler)
-const rooms = {};
 const roomCode = generateRoomCode()
 
-export function createRoom(roomCode, hostId) {
+export function createRoom(roomCode, hostId, nickname) {
     rooms[roomCode] = {
         host: hostId,
         players: {[hostId]: {nickname}},    //{socketId: {nickname}}

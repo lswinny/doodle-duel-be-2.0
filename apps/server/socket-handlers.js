@@ -7,6 +7,7 @@ import {
   leaveRoom,
   addSubmission,
   judgeRoomSubmissions,
+  rooms
 } from "./roomManager.js";
 
 
@@ -27,7 +28,7 @@ export default function registerHandlers(io, socket) {
     socket.join(roomCode);
 
     io.emit('lobby:rooms-updated', Object.keys(rooms));
-    socket.emit('roomCreated', roomCode);
+    socket.emit('roomCreated', roomCode, rooms[roomCode]);
   });
 
   socket.on('lobby:join', () => {
@@ -40,25 +41,66 @@ export default function registerHandlers(io, socket) {
       socket.emit('Invalid or expired token');
       return;
     }
-    if (!rooms[roomCode]) {
+
+    const room = rooms[roomCode]
+    if (!room) {
       socket.emit('error', 'Room not found');
       return;
     }
 
     joinRoom(roomCode, socket.id, nickname);
     socket.join(roomCode);
-    io.to(roomCode).emit('player-list', {
-      players: rooms[roomCode].players,
-      hostId: rooms[roomCode].hostId,
+
+    io.to(roomCode).emit('room:data', {
+      roomCode,
+      host: room.host,
+      players: room.players,
+      submissions: room.submissions
     });
     console.log(`${nickname} joined room ${roomCode}`);
     io.emit('lobby:rooms-updated', Object.keys(rooms));
   });
 
-  socket.on('draw', (data) => {
-    console.log(':pencil2: draw event from', socket.id, data);
-    socket.broadcast.emit('draw', data);
-  });
+  socket.on("get-room-data", ({roomCode}) => {
+    const room = rooms[roomCode];
+
+    if(!room){
+      socket.emit("room:data", null);
+      return;
+    }
+
+    socket.emit("room:data", {
+      host: room.host,
+      players: room.players,
+      submissions: room.submissions
+    })
+  })
+
+  socket.on("start-game", ({roomCode, token}) => {
+    const userData = checkIfTokenIsValid(token);
+    if(!userData){
+      socket.emit("Invalid or expired token");
+      return;
+    }
+
+    const room = rooms[roomCode];
+    if(!room){
+      socket.emit("error", "Room not found");
+      return;
+    }
+
+    if (socket.id !== room.host){
+      socket.emit("error","Only the host can start the game");
+      return;
+    }
+
+    io.to(roomCode).emit("game-started", {roomData: {roomCode, ...room}});
+  })
+
+  // socket.on('draw', (data) => {
+  //   console.log(':pencil2: draw event from', socket.id, data);
+  //   socket.broadcast.emit('draw', data);
+  // });
 
   socket.on('disconnect', () => {
     for (const code in rooms) {

@@ -8,7 +8,8 @@ export function createNewUserToken(userInfo) {
 
 export function checkIfTokenIsValid(token) {
   try {
-    const userData = jwt.verify(token, SECRET);
+    const userData = jwt.verify(token, SECRET, { expiresIn: '2h' }
+);
     return userData;
   } catch (error) {
     console.error("Authentication failed:", error.message);
