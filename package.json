@@ -11,7 +11,8 @@
   "private": true,
   "dependencies": {
     "cors": "^2.8.5",
-    "jsonwebtoken": "^9.0.2"
+    "jsonwebtoken": "^9.0.2",
+    "sharp": "^0.34.5"
   },
   "devDependencies": {
     "@nx/js": "22.1.1",

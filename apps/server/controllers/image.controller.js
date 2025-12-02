@@ -1,4 +1,4 @@
-import { addSubmission, findRoom } from '../roomManager';
+import { addSubmission } from '../roomManager.js';
 
 export function uploadImage(req, res) {
   const { socketId, roomCode } = req.body;
@@ -10,11 +10,11 @@ export function uploadImage(req, res) {
     });
   }
 
-  if (!findRoom(roomCode)) {
-    return res.status(400).send({
-      message: 'Room does not exist',
-    });
-  }
+  // if (!findRoom(roomCode)) {
+  //   return res.status(400).send({
+  //     message: 'Room does not exist',
+  //   });
+  // }
 
   addSubmission(roomCode, socketId, file);
   res.send({
