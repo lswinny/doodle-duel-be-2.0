@@ -107,19 +107,19 @@ export default function registerHandlers(io, socket) {
       category: randomPrompt.category
     })
 
-    let timeLeft = duration;
+    // let timeLeft = duration;
 
-    const interval = setInterval(() => {
-      timeLeft = timeLeft - 1;
-      io.to(roomCode).emit('round:countdown', { timeLeft });
-      console.log("TICK room", roomCode, "timeLeft", timeLeft);
+    // const interval = setInterval(() => {
+    //   timeLeft = timeLeft - 1;
+    //   io.to(roomCode).emit('round:countdown', { timeLeft });
+    //   console.log("TICK room", roomCode, "timeLeft", timeLeft);
 
-      if (timeLeft <= 0) {
-        clearInterval(interval);
-        io.to(roomCode).emit('round:ended');
-        // Trigger judging or put next-round setup here
-      }
-    }, 1000);
+    //   if (timeLeft <= 0) {
+    //     clearInterval(interval);
+    //     io.to(roomCode).emit('round:ended');
+    //     // Trigger judging or put next-round setup here
+    //   }
+    // }, 1000);
   });
 
   // socket.on('draw', (data) => {
