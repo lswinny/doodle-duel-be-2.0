@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
 import { SECRET, checkIfTokenIsValid } from './utils/auth.js';
 import { generateRoomCode } from './utils/roomCode.js';
+import fs from "fs";
 import {
   createRoom,
   joinRoom,
@@ -10,13 +11,17 @@ import {
   rooms,
 } from './roomManager.js';
 
+const prompts = JSON.parse(
+  fs.readFileSync(new URL("../shared/prompts.json", import.meta.url))
+);
+
 export default function registerHandlers(io, socket) {
   socket.on('set-nickname', ({ nickname }) => {
     const token = jwt.sign({ nickname }, SECRET);
     socket.emit('token', { token });
   });
 
-  socket.on('create-room', ({ token }) => {
+  socket.on('create-room', ({ token, prompt, category }) => {
     const userData = checkIfTokenIsValid(token);
     if (!userData) {
       socket.emit('Invalid or expired token');
@@ -87,15 +92,22 @@ export default function registerHandlers(io, socket) {
       socket.emit('error', 'Room not found');
       return;
     }
-  
-    if (socket.id !== room.host) {
-      socket.emit('error', 'Only the host can start the game');
+        if (socket.id !== room.host){
+      socket.emit("error","Only the host can start the game");
       return;
     }
+
     console.log("START GAME RECEIVED ON SERVER")
     io.to(roomCode).emit('game-started', { roomCode, roomData: { ...room } });
+        const randomPrompt = prompts[Math.floor(Math.random() * prompts.length)];
+    io.to(roomCode).emit("round:start", {
+      duration,
+      prompt: randomPrompt.prompt,
+      promptId: randomPrompt.id,
+      category: randomPrompt.category
+    })
+
     let timeLeft = duration;
-    io.to(roomCode).emit('round:start', { duration });
 
     const interval = setInterval(() => {
       timeLeft = timeLeft - 1;
