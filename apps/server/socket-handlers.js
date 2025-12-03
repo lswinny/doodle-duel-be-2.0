@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 import { SECRET, checkIfTokenIsValid } from './utils/auth.js';
 import { generateRoomCode } from './utils/roomCode.js';
-import fs from "fs";
+import fs from 'fs';
 import {
   createRoom,
   joinRoom,
@@ -12,7 +12,7 @@ import {
 } from './roomManager.js';
 
 const prompts = JSON.parse(
-  fs.readFileSync(new URL("../shared/prompts.json", import.meta.url))
+  fs.readFileSync(new URL('../shared/prompts.json', import.meta.url))
 );
 
 export default function registerHandlers(io, socket) {
@@ -92,20 +92,27 @@ export default function registerHandlers(io, socket) {
       socket.emit('error', 'Room not found');
       return;
     }
-        if (socket.id !== room.host){
-      socket.emit("error","Only the host can start the game");
+    if (socket.id !== room.host) {
+      socket.emit('error', 'Only the host can start the game');
       return;
     }
 
-    console.log("START GAME RECEIVED ON SERVER")
+    console.log('START GAME RECEIVED ON SERVER');
     io.to(roomCode).emit('game-started', { roomCode, roomData: { ...room } });
-        const randomPrompt = prompts[Math.floor(Math.random() * prompts.length)];
-    io.to(roomCode).emit("round:start", {
+    const randomPrompt = prompts[Math.floor(Math.random() * prompts.length)];
+    io.to(roomCode).emit('round:start', {
       duration,
       prompt: randomPrompt.prompt,
       promptId: randomPrompt.id,
-      category: randomPrompt.category
-    })
+      category: randomPrompt.category,
+    });
+
+    socket.on('next-round', (roomCode) => {
+      // You can reset scores, clear submissions, pick a new prompt, etc.
+      const randomPrompt = prompts[Math.floor(Math.random() * prompts.length)];
+
+      io.to(roomCode).emit('start-next-round', { roomCode });
+    });
 
     // let timeLeft = duration;
 
