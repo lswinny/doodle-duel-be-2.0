@@ -9,6 +9,8 @@ import {
   addSubmission,
   judgeRoomSubmissions,
   rooms,
+  startNewRound,
+  handlePlayerLeaving
 } from './roomManager.js';
 
 const prompts = JSON.parse(
@@ -107,13 +109,6 @@ export default function registerHandlers(io, socket) {
       category: randomPrompt.category,
     });
 
-    socket.on('next-round', (roomCode) => {
-      // You can reset scores, clear submissions, pick a new prompt, etc.
-      const randomPrompt = prompts[Math.floor(Math.random() * prompts.length)];
-
-      io.to(roomCode).emit('start-next-round', { roomCode });
-    });
-
     // let timeLeft = duration;
 
     // const interval = setInterval(() => {
@@ -129,34 +124,64 @@ export default function registerHandlers(io, socket) {
     // }, 1000);
   });
 
+  socket.on('next-round', ({ roomCode }) => {
+    const data = startNewRound(roomCode);
+
+    if (!data) {
+      socket.emit('error', 'Room not found');
+      return;
+    }
+
+    io.to(roomCode).emit('round:start', data);
+  });
+
   // socket.on('draw', (data) => {
   //   console.log(':pencil2: draw event from', socket.id, data);
   //   socket.broadcast.emit('draw', data);
   // });
 
   socket.on('disconnect', () => {
-    for (const code in rooms) {
-      const room = rooms[code];
+    for (const roomCode in rooms) {
+      const result = handlePlayerLeaving(roomCode, socket.id);
 
-      if (room.players[socket.id]) {
-        if (room.host === socket.id) {
-          // Host left, close room
-          delete rooms[code];
-          io.to(code).emit('roomClosed', { roomCode: code });
-          socket.leave(code);
-          io.emit('lobby:rooms-updated', Object.keys(rooms));
-          console.log(`Host left, room ${code} closed`);
-        } else {
-          // Regular player left
-          leaveRoom(code, socket.id);
-          io.to(code).emit('player-list', {
-            players: room.players,
-            hostId: room.hostId,
-          });
-          console.log(`Player left room ${code}`);
-        }
+      if (!result) continue;
+
+      if (result.roomClosed) {
+        io.to(roomCode).emit('roomClosed', { roomCode });
+        io.emit('lobby:rooms-updated', Object.keys(rooms));
+        console.log(`Host disconnected — room ${roomCode} deleted`);
+      } else {
+        io.to(roomCode).emit('room:data', {
+          roomCode,
+          host: rooms[roomCode].host,
+          players: rooms[roomCode].players,
+          submissions: rooms[roomCode].submissions,
+        });
+        console.log(`Player ${socket.id} disconnected from room ${roomCode}`);
       }
     }
+  });
+
+  socket.on('quit-room', ({ roomCode }) => {
+    const result = handlePlayerLeaving(roomCode, socket.id);
+
+    if (!result) return;
+
+    if (result.roomClosed) {
+      io.to(roomCode).emit('roomClosed', { roomCode });
+      io.emit('lobby:rooms-updated', Object.keys(rooms));
+      console.log(`Host quit — room ${roomCode} deleted`);
+    } else {
+      io.to(roomCode).emit('room:data', {
+        roomCode,
+        host: rooms[roomCode].host,
+        players: rooms[roomCode].players,
+        submissions: rooms[roomCode].submissions,
+      });
+      console.log(`Player ${socket.id} quit room ${roomCode}`);
+    }
+
+    socket.leave(roomCode);
   });
 
   socket.on('submit-drawing', ({ roomCode, imageData }) => {

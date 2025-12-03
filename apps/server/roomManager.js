@@ -100,3 +100,44 @@ export async function judgeRoomSubmissions(roomCode, promptId) {
     error: result.error,
   };
 }
+
+export function startNewRound(roomCode, duration = 30) {
+  const room = rooms[roomCode];
+  if (!room) return null;
+
+  // Reset round state
+  room.submissions = [];
+  //room.scores = {};
+  room.timeLeft = duration;
+
+  // Pick a new random prompt
+  const randomPrompt = prompts[Math.floor(Math.random() * prompts.length)];
+
+  return {
+    duration,
+    prompt: randomPrompt.prompt,
+    promptId: randomPrompt.id,
+    category: randomPrompt.category,
+  };
+}
+
+export function handlePlayerLeaving(roomCode, socketId) {
+  const room = rooms[roomCode];
+  if (!room) return null;
+
+  if (room.host === socketId) {
+    // Host left → delete room
+    delete rooms[roomCode];
+    return { roomClosed: true };
+  } 
+  // Regular player leaves
+  delete room.players[socketId];
+
+  // If room is now empty after player leaves, delete it
+  if (Object.keys(room.players).length === 0) {
+    delete rooms[roomCode];
+    return { roomClosed: true };
+  }
+
+  return { roomClosed: false };
+}
