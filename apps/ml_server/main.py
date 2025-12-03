@@ -1,61 +1,44 @@
 from fastapi import FastAPI
+import base64
+import io
+import torch
+import clip
+from PIL import Image
 from pydantic import BaseModel
-from typing import List
-
 
 app = FastAPI()
 
+device = "cuda" if torch.cuda.is_available() else "cpu"
+model, preprocess = clip.load("ViT-B/32", device=device)
 
-# ---------- Request / response models ----------
-
-class ImageScore(BaseModel):
-    image_index: int
-    score: float
-
-
-class JudgeRequest(BaseModel):
+class ClipRequest(BaseModel):
     prompt: str
-    images: List[str]  # list of base64 / data URLs
-
-
-class JudgeResponse(BaseModel):
-    scores: List[ImageScore]
-    winner_index: int
-
-
-# ---------- Simple test endpoints (optional) ----------
+    image: str
 
 @app.get("/")
 async def root():
-    return {"message": "Hello from ml_server"}
+    return {"message": "Hello From ML_Server"}
+
+@app.post("/score-image")
+def confidence_rating(data:ClipRequest):
+    img_bytes = base64.b64decode(data.image)
+    pil_image = Image.open(io.BytesIO(img_bytes)).convert("RGB")
+
+    image_tensor = preprocess(pil_image).unsqueeze(0).to(device)
+    text_tokens = clip.tokenize([data.prompt]).to(device)
+
+    with torch.no_grad():
+        image_features = model.encode_image(image_tensor)
+        text_features = model.encode_text(text_tokens)
+
+    similarity = torch.cosine_similarity(image_features, text_features)[0].item()
+    print(similarity)
+    confidence = max(0, similarity)
 
 
-# ---------- AI judge endpoint ----------
+    return {
+        "prompt": data.prompt,
+        "confidence": confidence,
+        "confidence_percent": round(confidence * 100, 2)
+    }
 
-@app.post("/score-images", response_model=JudgeResponse)
-async def score_images(payload: JudgeRequest):
-    """
-    This is where we 'call the AI model API'.
-
-    For now we implement a simple scoring function so the game
-    logic can be wired up and tested. Later, this block can call
-    a real model instead of the dummy scoring.
-    """
-
-    scores: List[ImageScore] = []
-
-    # Very naive scoring: longer image strings get slightly higher score.
-    # This is just a stand-in for real AI logic.
-    for idx, img in enumerate(payload.images):
-        # Using length as a fake score, scaled down
-        score_value = len(img) / 1000.0
-        scores.append(ImageScore(image_index=idx, score=score_value))
-
-    # Pick the winner (highest score)
-    if not scores:
-        # No images provided – this shouldn't really happen
-        return JudgeResponse(scores=[], winner_index=-1)
-
-    winner_index = max(range(len(scores)), key=lambda i: scores[i].score)
-
-    return JudgeResponse(scores=scores, winner_index=winner_index)

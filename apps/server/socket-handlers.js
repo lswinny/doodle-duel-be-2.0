@@ -83,7 +83,7 @@ export default function registerHandlers(io, socket) {
   socket.on('start-game', ({ roomCode, token, duration = 30 }) => {
     const userData = checkIfTokenIsValid(token);
     if (!userData) {
-      socket.emit('Invalid or expired token');
+      socket.emit("error",'Invalid or expired token');
       return;
     }
 
