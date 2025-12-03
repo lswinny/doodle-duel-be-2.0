@@ -1,45 +1,49 @@
 export const rooms = {};
 
-import { judgeDrawingsWithAI } from "./utils/aiJudge.js";
-import fs from "fs";
-import { generateRoomCode } from "./utils/roomCode.js";
+import { judgeDrawingsWithAI } from './utils/aiJudge.js';
+import fs from 'fs';
+import { generateRoomCode } from './utils/roomCode.js';
+import { io } from './server.js';
 
 // Load the JSON file manually
 const prompts = JSON.parse(
-  fs.readFileSync(new URL("../shared/prompts.json", import.meta.url))
+  fs.readFileSync(new URL('../shared/prompts.json', import.meta.url))
 );
 
-// "MODEL" (rather than "Controller" - socket-handler)
-const roomCode = generateRoomCode()
+const roomCode = generateRoomCode();
 
-export function createRoom(roomCode, hostId, nickname) {
-    rooms[roomCode] = {
-        host: hostId,
-        players: {[hostId]: {nickname}},    //{socketId: {nickname}}
-        submissions: [],
-    };
+export function createRoom(roomCode, hostId, nickname, server) {
+  rooms[roomCode] = {
+    host: hostId,
+    players: { [hostId]: { nickname } }, //{socketId: {nickname}}
+    submissions: [],
+    server,
+    currentPrompt: '',
+  };
 }
 
-export function joinRoom(roomCode, socketId, nickname){
-    const room = rooms[roomCode]
-  if (!room) return;
+export function findRoom(roomCode) {
+  console.log(rooms);
+  const room = rooms[roomCode];
+  return room ? true : false;
+}
+
+export function joinRoom(roomCode, socketId, nickname) {
+  if (!findRoom) return;
+  const room = rooms[roomCode];
   room.players[socketId] = { nickname };
 }
 
-export function leaveRoom(roomCode, socketId){
-    const room = rooms[roomCode];
-    if (!room) return;
-    delete room.players[socketId];
+export function leaveRoom(roomCode, socketId) {
+  const room = rooms[roomCode];
+  if (!room) return;
+  delete room.players[socketId];
 
-    //remove room if empty
-    if (Object.keys(rooms[roomCode].players).length === 0) {
-        delete rooms[roomCode];
-    }
+  //remove room if empty
+  if (Object.keys(rooms[roomCode].players).length === 0) {
+    delete rooms[roomCode];
+  }
 }
-
-
-
-// ... adding the below exports on my branch
 
 export function addSubmission(roomCode, socketId, imageData) {
   const room = rooms[roomCode];
@@ -49,6 +53,10 @@ export function addSubmission(roomCode, socketId, imageData) {
     socketId,
     imageData,
   });
+
+  if (room.submissions.length === Object.keys(room.players).length) {
+    judgeRoomSubmissions(room);
+  }
 
   return true;
 }
@@ -70,37 +78,32 @@ export function _getRoom(roomCode) {
   return rooms[roomCode];
 }
 
-
-export async function judgeRoomSubmissions(roomCode, promptId) {
-    const room = rooms[roomCode];
-    if (!room) {
-      throw new Error(`Room ${roomCode} not found`);
-    }
-  
-    const submissions = room.submissions;
-    if (!submissions || submissions.length === 0) {
-      throw new Error(`No submissions for room ${roomCode}`);
-    }
-  
-    // Find prompt text from prompts.json using the id
-    const promptObj = prompts.find((p) => p.id === promptId);
-    if (!promptObj) {
-      throw new Error(`Prompt with id ${promptId} not found`);
-    }
-  
-    const promptText = promptObj.prompt;
-    const images = submissions.map((s) => s.imageData);
-  
-    const result = await judgeDrawingsWithAI(promptText, images);
-  
-    const winnerSubmission = submissions[result.winnerIndex];
-  
-    return {
-      prompt: promptText,
-      winnerSocketId: winnerSubmission.socketId,
-      scores: result.scores,
-      isFallback: result.isFallback,
-      error: result.error,
-    };
+export async function judgeRoomSubmissions(room) {
+  if (!room) {
+    throw new Error(`Invalid room object`);
   }
-  
+
+  const submissions = room.submissions;
+  if (!submissions || submissions.length === 0) {
+    throw new Error(`No submissions for room ${roomCode}`);
+  }
+
+  const promptText = room.currentPrompt;
+  const images = submissions.map((s) => s.imageData);
+
+  const result = await judgeDrawingsWithAI(promptText, images);
+
+  const winnerSubmission = submissions[result.winnerIndex];
+
+  const results = {
+    prompt: promptText,
+    winnerSocketId: winnerSubmission.socketId,
+    scores: result.scores,
+    isFallback: result.isFallback,
+    error: result.error,
+  };
+
+  console.log(results);
+
+  io.to(roomCode).emit('round-results', results);
+}

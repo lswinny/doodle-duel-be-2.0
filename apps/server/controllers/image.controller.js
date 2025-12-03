@@ -1,20 +1,25 @@
-import { addSubmission } from '../roomManager.js';
+import { addSubmission, findRoom } from '../roomManager.js';
 
-export function uploadImage(req, res) {
+export async function uploadImage(req, res) {
+  if (!req.body) {
+    return res.status(400).send({
+      message: 'Request does not contain a body',
+    });
+  }
   const { socketId, roomCode } = req.body;
   const file = req.file;
 
-  if (!socketId || !roomCode || !file) {
+  if (!socketId || !roomCode) {
     return res.status(400).send({
       message: 'socketId, roomCode and image are required.',
     });
   }
 
-  // if (!findRoom(roomCode)) {
-  //   return res.status(400).send({
-  //     message: 'Room does not exist',
-  //   });
-  // }
+  if (!findRoom(roomCode)) {
+    return res.status(400).send({
+      message: 'Room does not exist',
+    });
+  }
 
   addSubmission(roomCode, socketId, file);
   res.send({

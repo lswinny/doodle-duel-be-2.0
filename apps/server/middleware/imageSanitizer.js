@@ -2,7 +2,6 @@ import sharp from 'sharp';
 
 async function sanitizeImage(req, res, next) {
   if (!req.file) return next();
-
   try {
     const buffer = await sharp(req.file.buffer)
       .rotate()
