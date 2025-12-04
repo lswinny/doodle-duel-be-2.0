@@ -1,4 +1,6 @@
-const AI_SERVER_URL = process.env.AI_SERVER_URL || 'http://127.0.0.1:8000';
+const AI_SERVER_URL =
+  process.env.AI_SERVER_URL ||
+  'https://edmund-overjoyful-recreantly.ngrok-free.dev';
 import binaryToBase64 from './binarytob64.js';
 
 /**
@@ -8,14 +10,14 @@ import binaryToBase64 from './binarytob64.js';
  * @param {string[]} images - data URL strings for each player's drawing
  * @returns {Promise<{ scores: { image_index: number, score: number }[], winnerIndex: number, isFallback: boolean }>}
  */
-export async function judgeDrawingsWithAI(prompt, images) {
-  if (!prompt || !Array.isArray(images) || images.length === 0) {
-    throw new Error('judgeDrawingsWithAI called without prompt or images');
+export async function judgeDrawingsWithAI(prompt, submissions) {
+  if (!prompt || !Array.isArray(submissions) || submissions.length === 0) {
+    throw new Error('judgeDrawingsWithAI called without prompt or submissions');
   }
 
   try {
     // Build a scoring function for ONE image
-    async function scoreSingleImage(image, index) {
+    async function scoreSingleImage(image, index, playerName) {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 8000);
 
@@ -34,16 +36,20 @@ export async function judgeDrawingsWithAI(prompt, images) {
       }
 
       const data = await res.json();
+      console.log(data);
       return {
+        playerName,
         image: image,
         image_index: index,
-        score: Number(data.percentage) || 0,
+        score: Number(data.confidence_percent) || 0,
       };
     }
 
     // Score ALL images in parallel
     const scores = await Promise.all(
-      images.map((img, idx) => scoreSingleImage(img, idx))
+      submissions.map((item, idx) => {
+        return scoreSingleImage(item.imageData, idx, item.playerName);
+      })
     );
 
     // Determine winner
@@ -51,8 +57,8 @@ export async function judgeDrawingsWithAI(prompt, images) {
     let winnerIndex = 0;
 
     scores.forEach((item) => {
-      if (item.percentage > best) {
-        best = item.percentage;
+      if (item.score > best) {
+        best = item.score;
         winnerIndex = item.image_index;
       }
     });
@@ -66,10 +72,10 @@ export async function judgeDrawingsWithAI(prompt, images) {
     console.error('AI judge failed:', err.message);
 
     // fallback picks a random winner so game continues
-    const fallbackWinnerIndex = Math.floor(Math.random() * images.length);
+    const fallbackWinnerIndex = Math.floor(Math.random() * submissions.length);
 
     return {
-      scores: images.map((_, i) => ({
+      scores: submissions.map((_, i) => ({
         image_index: i,
         score: i === fallbackWinnerIndex ? 1 : 0,
       })),

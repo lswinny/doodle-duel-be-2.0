@@ -45,7 +45,14 @@ export function addSubmission(roomCode, socketId, imageData) {
   const room = rooms[roomCode];
   if (!room) return false;
 
+  const player = room.players[socketId];
+  if (!player) {
+    console.log(
+      `Player with socket ${socketId} not found in current room ${roomCode}`
+    );
+  }
   room.submissions.push({
+    playerName: player.nickname,
     socketId,
     imageData,
   });
@@ -75,8 +82,8 @@ export function _getRoom(roomCode) {
 }
 
 export async function judgeRoomSubmissions(room) {
-  const roomCode = Object.keys(rooms).find(key => rooms[key] === room);
-  
+  const roomCode = Object.keys(rooms).find((key) => rooms[key] === room);
+
   if (!room) {
     throw new Error(`Invalid room object`);
   }
@@ -89,7 +96,7 @@ export async function judgeRoomSubmissions(room) {
   const promptText = room.currentPrompt;
   const images = submissions.map((s) => s.imageData);
 
-  const result = await judgeDrawingsWithAI(promptText, images);
+  const result = await judgeDrawingsWithAI(promptText, submissions);
 
   const winnerSubmission = submissions[result.winnerIndex];
 
@@ -107,7 +114,7 @@ export async function judgeRoomSubmissions(room) {
   if (roomCode) {
     io.to(roomCode).emit('round-results', results);
   } else {
-    console.error("Could not find room code for broadcasting results.");
+    console.error('Could not find room code for broadcasting results.');
   }
 }
 
@@ -128,7 +135,7 @@ export function startNewRound(roomCode, duration = 30) {
     prompt: randomPrompt.prompt,
     promptId: randomPrompt.id,
     category: randomPrompt.category,
-    room: room
+    room: room,
   };
 }
 
@@ -140,7 +147,7 @@ export function handlePlayerLeaving(roomCode, socketId) {
     // Host left → delete room
     delete rooms[roomCode];
     return { roomClosed: true };
-  } 
+  }
   // Regular player leaves
   delete room.players[socketId];
 
