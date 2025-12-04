@@ -128,6 +128,7 @@ export function startNewRound(roomCode, duration = 30) {
     prompt: randomPrompt.prompt,
     promptId: randomPrompt.id,
     category: randomPrompt.category,
+    room: room
   };
 }
 

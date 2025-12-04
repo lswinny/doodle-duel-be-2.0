@@ -10,12 +10,55 @@ import {
   judgeRoomSubmissions,
   rooms,
   startNewRound,
-  handlePlayerLeaving
+  handlePlayerLeaving,
 } from './roomManager.js';
 
 const prompts = JSON.parse(
   fs.readFileSync(new URL('../shared/prompts.json', import.meta.url))
 );
+
+const preCountDown = (io, roomCode, duration, room) => {
+  io.to(roomCode).emit('game-started', { roomCode, roomData: { ...room } });
+
+  const randomPrompt = prompts[Math.floor(Math.random() * prompts.length)];
+
+  let preCount = 3;
+  const preInterval = setInterval(() => {
+    io.to(roomCode).emit('round:precountdown', {
+      count: preCount,
+      prompt: randomPrompt.prompt,
+      category: randomPrompt.category,
+      promptId: randomPrompt.id,
+      duration,
+    });
+    preCount = preCount - 1;
+
+    if (preCount < 0) {
+      clearInterval(preInterval);
+      room.currentPrompt = randomPrompt.prompt;
+      io.to(roomCode).emit('round:start', {
+        duration,
+        prompt: randomPrompt.prompt,
+        promptId: randomPrompt.id,
+        category: randomPrompt.category,
+      });
+
+      let timeLeft = duration;
+
+      const interval = setInterval(() => {
+        timeLeft = timeLeft - 1;
+        io.to(roomCode).emit('round:countdown', { timeLeft });
+        console.log('TICK room', roomCode, 'timeLeft', timeLeft);
+
+        if (timeLeft <= 0) {
+          clearInterval(interval);
+          io.to(roomCode).emit('round:ended');
+          // Trigger judging or put next-round setup here
+        }
+      }, 1000);
+    }
+  }, 1000);
+};
 
 export default function registerHandlers(io, socket) {
   socket.on('set-nickname', ({ nickname }) => {
@@ -99,47 +142,9 @@ export default function registerHandlers(io, socket) {
       return;
     }
 
+    preCountDown(io, roomCode, duration, room);
+
     console.log('START GAME RECEIVED ON SERVER');
-    io.to(roomCode).emit('game-started', { roomCode, roomData: { ...room } });
-
-    const randomPrompt = prompts[Math.floor(Math.random() * prompts.length)];
-
-    let preCount = 3;
-    const preInterval = setInterval(() => {
-      io.to(roomCode).emit('round:precountdown', {
-        count: preCount,
-        prompt: randomPrompt.prompt,
-        category: randomPrompt.category,
-        promptId: randomPrompt.id,
-        duration,
-      });
-      preCount = preCount - 1;
-
-      if (preCount < 0) {
-        clearInterval(preInterval);
-        room.currentPrompt = randomPrompt.prompt;
-        io.to(roomCode).emit('round:start', {
-          duration,
-          prompt: randomPrompt.prompt,
-          promptId: randomPrompt.id,
-          category: randomPrompt.category,
-        });
-
-        let timeLeft = duration;
-
-        const interval = setInterval(() => {
-          timeLeft = timeLeft - 1;
-          io.to(roomCode).emit('round:countdown', { timeLeft });
-          console.log('TICK room', roomCode, 'timeLeft', timeLeft);
-
-          if (timeLeft <= 0) {
-            clearInterval(interval);
-            io.to(roomCode).emit('round:ended');
-            // Trigger judging or put next-round setup here
-          }
-        }, 1000);
-      }
-    }, 1000);
   });
 
   socket.on('next-round', ({ roomCode }) => {
@@ -149,8 +154,10 @@ export default function registerHandlers(io, socket) {
       socket.emit('error', 'Room not found');
       return;
     }
+    
+    preCountDown(io, roomCode, data.duration, data.room);
 
-    io.to(roomCode).emit('round:start', data);
+    // io.to(roomCode).emit('round:start', data);
   });
 
   // socket.on('draw', (data) => {
