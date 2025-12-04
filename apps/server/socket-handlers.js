@@ -116,12 +116,14 @@ export default function registerHandlers(io, socket) {
     //   io.to(roomCode).emit('round:countdown', { timeLeft });
     //   console.log("TICK room", roomCode, "timeLeft", timeLeft);
 
-    //   if (timeLeft <= 0) {
-    //     clearInterval(interval);
-    //     io.to(roomCode).emit('round:ended');
-    //     // Trigger judging or put next-round setup here
-    //   }
-    // }, 1000);
+          if (timeLeft <= 0) {
+            clearInterval(interval);
+            io.to(roomCode).emit('round:ended');
+            // Trigger judging or put next-round setup here
+          }
+        }, 1000);
+      }
+    }, 1000);
   });
 
   socket.on('next-round', ({ roomCode }) => {
