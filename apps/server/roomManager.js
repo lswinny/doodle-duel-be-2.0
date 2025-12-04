@@ -9,10 +9,10 @@ const prompts = JSON.parse(
   fs.readFileSync(new URL('../shared/prompts.json', import.meta.url))
 );
 
-export function createRoom(roomCode, hostId, nickname) {
+export function createRoom(roomCode, hostId, nickname, avatar) {
   rooms[roomCode] = {
     host: hostId,
-    players: { [hostId]: { nickname } }, //{socketId: {nickname}}
+    players: { [hostId]: { nickname, avatar } }, //{socketId: {nickname}}
     submissions: [],
     currentPrompt: '',
   };
@@ -24,10 +24,10 @@ export function findRoom(roomCode) {
   return room ? true : false;
 }
 
-export function joinRoom(roomCode, socketId, nickname) {
-  if (!findRoom) return;
+export function joinRoom(roomCode, socketId, nickname, avatar) {
+  if (!findRoom(roomCode)) return;
   const room = rooms[roomCode];
-  room.players[socketId] = { nickname };
+  room.players[socketId] = { nickname, avatar };
 }
 
 export function leaveRoom(roomCode, socketId) {
