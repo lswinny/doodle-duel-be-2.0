@@ -58,19 +58,19 @@ const preCountDown = (io, roomCode, duration, room) => {
 };
 
 export default function registerHandlers(io, socket) {
-  socket.on('set-nickname', ({ nickname }) => {
-    const token = jwt.sign({ nickname }, SECRET);
+  socket.on('set-nickname', ({ nickname, avatar }) => {
+    const token = jwt.sign({ nickname, avatar }, SECRET);
     socket.emit('token', { token });
   });
 
-  socket.on('create-room', ({ token }) => {
+  socket.on('create-room', ({ token, avatar }) => {
     const userData = checkIfTokenIsValid(token);
     if (!userData) {
       socket.emit('Invalid or expired token');
       return;
     }
     const roomCode = generateRoomCode();
-    createRoom(roomCode, socket.id, userData.nickname);
+    createRoom(roomCode, socket.id, userData.nickname, avatar);
     socket.join(roomCode);
 
     io.emit('lobby:rooms-updated', Object.keys(rooms));
@@ -81,7 +81,7 @@ export default function registerHandlers(io, socket) {
     socket.emit('lobby:rooms-updated', Object.keys(rooms));
   });
 
-  socket.on('join-room', ({ roomCode, nickname, token }) => {
+  socket.on('join-room', ({ roomCode, nickname, token, avatar }) => {
     const userData = checkIfTokenIsValid(token);
     if (!userData) {
       socket.emit('Invalid or expired token');
@@ -94,7 +94,7 @@ export default function registerHandlers(io, socket) {
       return;
     }
 
-    joinRoom(roomCode, socket.id, nickname);
+    joinRoom(roomCode, socket.id, nickname, avatar);
     socket.join(roomCode);
 
     io.to(roomCode).emit('room:data', {
