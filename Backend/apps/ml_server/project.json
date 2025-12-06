@@ -1,0 +1,11 @@
+{
+  "name": "ml_server",
+  "targets": {
+    "serve": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "fastapi dev apps/ml_server/main.py"
+      }
+    }
+  }
+}

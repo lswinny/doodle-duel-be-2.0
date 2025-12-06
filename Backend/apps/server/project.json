@@ -1,0 +1,11 @@
+{
+  "name": "server",
+  "targets": {
+    "serve": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npm run dev --prefix apps/server"
+      }
+    }
+  }
+}

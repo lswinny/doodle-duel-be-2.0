@@ -1,0 +1,27 @@
+t=2025-12-06T19:17:32+0000 lvl=info msg="no configuration paths supplied"
+t=2025-12-06T19:17:32+0000 lvl=info msg="using configuration at default config path" path=/home/breezy-treesy/.config/ngrok/ngrok.yml
+t=2025-12-06T19:17:32+0000 lvl=info msg="open config file" path=/home/breezy-treesy/.config/ngrok/ngrok.yml err=nil
+t=2025-12-06T19:17:32+0000 lvl=info msg="FIPS 140 mode" enabled=false
+t=2025-12-06T19:17:32+0000 lvl=info msg="starting web service" obj=web addr=127.0.0.1:4040 allow_hosts=[]
+t=2025-12-06T19:17:32+0000 lvl=info msg="client session established" obj=tunnels.session
+t=2025-12-06T19:17:32+0000 lvl=info msg="tunnel session started" obj=tunnels.session
+t=2025-12-06T19:17:33+0000 lvl=info msg="started tunnel" obj=tunnels name=command_line addr=http://localhost:8000 url=https://elba-unsuppressible-tess.ngrok-free.dev
+t=2025-12-06T19:18:05+0000 lvl=info msg=start pg=/api/tunnels id=f19155c7c6cb7056
+t=2025-12-06T19:18:05+0000 lvl=info msg=end pg=/api/tunnels id=f19155c7c6cb7056 status=200 dur=764.199µs
+t=2025-12-06T19:18:14+0000 lvl=info msg=start pg=/api/tunnels id=5e602877ce94f285
+t=2025-12-06T19:18:14+0000 lvl=info msg=end pg=/api/tunnels id=5e602877ce94f285 status=200 dur=361.2µs
+t=2025-12-06T19:25:21+0000 lvl=info msg=start pg=/api/tunnels id=a3d601fbb08a81da
+t=2025-12-06T19:25:21+0000 lvl=info msg=end pg=/api/tunnels id=a3d601fbb08a81da status=200 dur=389.398µs
+t=2025-12-06T19:27:09+0000 lvl=info msg=start pg=/api/tunnels id=864cd24ea59620f7
+t=2025-12-06T19:27:09+0000 lvl=info msg=end pg=/api/tunnels id=864cd24ea59620f7 status=200 dur=309.7µs
+t=2025-12-06T19:31:24+0000 lvl=info msg="join connections" obj=join id=18595b12c205 l=127.0.0.1:8000 r=92.26.152.92:62016
+t=2025-12-06T19:41:42+0000 lvl=info msg=start pg=/api/tunnels id=a2c5e10b14ba09cc
+t=2025-12-06T19:41:42+0000 lvl=info msg=end pg=/api/tunnels id=a2c5e10b14ba09cc status=200 dur=345.5µs
+t=2025-12-06T19:50:36+0000 lvl=info msg=start pg=/api/tunnels id=eed55b7c69f035df
+t=2025-12-06T19:50:36+0000 lvl=info msg=end pg=/api/tunnels id=eed55b7c69f035df status=200 dur=320.3µs
+t=2025-12-06T19:54:45+0000 lvl=info msg=start pg=/api/tunnels id=8f772c584ad84a6a
+t=2025-12-06T19:54:45+0000 lvl=info msg=end pg=/api/tunnels id=8f772c584ad84a6a status=200 dur=308.76µs
+t=2025-12-06T20:35:28+0000 lvl=eror msg="heartbeat timeout, terminating session" obj=tunnels.session obj=csess id=e5ad0d5432a5 clientid=5fa7b3f5adbbb204d103b27579dc39d2
+t=2025-12-06T20:35:28+0000 lvl=eror msg="session closed, starting reconnect loop" obj=tunnels.session obj=csess id=d0ea7703e293 err="session closed"
+t=2025-12-06T20:35:28+0000 lvl=info msg="client session established" obj=tunnels.session
+t=2025-12-06T20:35:28+0000 lvl=info msg="tunnel session started" obj=tunnels.session
