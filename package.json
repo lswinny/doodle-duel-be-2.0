@@ -6,7 +6,8 @@
   "scripts": {
     "server": "nx serve server",
     "ml_server": "nx serve ml_server",
-    "all": "nx run-many --target=serve --projects=server,ml_server --parallel"
+    "all": "nx run-many --target=serve --projects=server,ml_server --parallel",
+    "be": "./start-dev.sh"
   },
   "private": true,
   "devDependencies": {
