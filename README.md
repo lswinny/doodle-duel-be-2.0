@@ -1,90 +1,166 @@
-# Backend
+# Doodle Duel Backend
 
-<a alt="Nx logo" href="https://nx.dev" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="45"></a>
+This backend powers **Doodle Duel**, a real-time multiplayer drawing game with AI scoring. It consists of two services that run together:
 
-✨ Your new, shiny [Nx workspace](https://nx.dev) is almost ready ✨.
+- **Node.js Server** (`apps/server`) — manages players, rooms, and real-time events via Socket.IO.
+- **FastAPI ML Server** (`apps/ml_server`) — evaluates submitted doodles using AI and returns scores.
+- **ngrok tunnel** — bridges the ML server to the Node backend in local development.
 
-[Learn more about this workspace setup and its capabilities](https://nx.dev/nx-api/js?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects) or run `npx nx graph` to visually explore what was created. Now, let's get you up to speed!
+### AI Judge (Experimental)
 
-## Finish your CI setup
+This project includes an AI-based image judge. In practice, the model does not currently produce accurate results, but it was valuable to experiment with integrating AI into the workflow. The feature is kept in the repo to demonstrate exploration of AI-driven scoring and sanitisation.
 
-[Click here to finish setting up your workspace!](https://cloud.nx.app/connect/QYvPLhi1ai)
+## Folder Structure
+
+Backend/ 
+├── README.md # General backend overview 
+├── README-ML-Server.md # ML server specific notes 
+├── apps/ 
+│ ├── server/  -   Node.js + Socket.IO backend 
+│ │ ├── app.js    -   Express app setup
+│ │ ├── server.js    -   Entry point
+│ │ ├── controllers/    -   Route handlers 
+│ │ ├── middleware/  -   Express middleware 
+│ │ ├── socket-handlers.js   -  Socket.IO event logic
+│ │ ├── roomManager.js  -  Room state management
+│ │ └── utils/    -   Helper functions 
+│ ├── ml_server/  -   FastAPI ML server 
+│ │ ├── main.py   -  FastAPI app entry point
+│ │ └── requirements.txt   -  Python dependencies
+│ └── shared/
+│ └── prompts.json   -   AI scoring prompts 
+├── start-dev.sh  -   Helper script to run ML + ngrok + Node 
+├── install-all.cjs  -   Install helper 
+├── workflows/ci.yml    -   CI pipeline 
+└── package.json  -   Root dependencies
+
+---
+
+# Development Setup: FastAPI ML Server + ngrok + Node Backend
+
+This guide explains how to set up and run the ML server, ngrok tunnel, and Node backend together. It’s designed for those who fork this project and want a reproducible local environment.
+
+## Prerequisites
+
+- **Python 3.10+** installed
+- **Node.js 18+** installed
+- **ngrok** installed (sign up at [ngrok.com](https://ngrok.com) and download the CLI)
+- A working **virtual environment** (`.venv`) for Python, located in apps/ml_server/.venv.
+Activate it before running the ML server.
 
 
-## Generate a library
+---
 
-```sh
-npx nx g @nx/js:lib packages/pkg1 --publishable --importPath=@my-org/pkg1
+## Installation
+
+1. **Clone your fork**
+
+```bash
+   git clone <your-fork-url>
+   cd new-doodle-duel/Backend
 ```
 
-## Run tasks
+2. **Python Setup**
 
-To build the library use:
-
-```sh
-npx nx build pkg1
+```bash
+cd apps/ml_server
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
 ```
 
-To run any task with Nx use:
+3. **Node Setup**
 
-```sh
-npx nx <target> <project-name>
+```bash
+cd apps/server
+npm install
 ```
 
-These targets are either [inferred automatically](https://nx.dev/concepts/inferred-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) or defined in the `project.json` or `package.json` files.
+4. **NGrok Setup**
+- Sign up on ngrok.com
+- Install ngrok CLI
+- Authenticate with your account: 
 
-[More about running tasks in the docs &raquo;](https://nx.dev/features/run-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Versioning and releasing
-
-To version and release the library use
-
-```
-npx nx release
+```bash 
+   ngrok config add-authtoken <your-token>
 ```
 
-Pass `--dry-run` to see what would happen without actually releasing the library.
+# Running Manually (for debugging, see Helper Script section below for quicker method)
+Open three terminals:
 
-[Learn more about Nx release &raquo;](https://nx.dev/features/manage-releases?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+1. **FastAPI ML server**
 
-## Keep TypeScript project references up to date
-
-Nx automatically updates TypeScript [project references](https://www.typescriptlang.org/docs/handbook/project-references.html) in `tsconfig.json` files to ensure they remain accurate based on your project dependencies (`import` or `require` statements). This sync is automatically done when running tasks such as `build` or `typecheck`, which require updated references to function correctly.
-
-To manually trigger the process to sync the project graph dependencies information to the TypeScript project references, run the following command:
-
-```sh
-npx nx sync
+``` bash
+source apps/ml_server/.venv/bin/activate
+uvicorn apps.ml_server.main:app --port 8000 --reload
 ```
 
-You can enforce that the TypeScript project references are always in the correct state when running in CI by adding a step to your CI job configuration that runs the following command:
+2. **ngrok tunnel**
 
-```sh
-npx nx sync:check
+```bash
+ngrok http 8000
 ```
 
-[Learn more about nx sync](https://nx.dev/reference/nx-commands#sync)
+Copy the generated URL (e.g. https://abcd1234.ngrok-free.dev).
 
+3. **Node backend**
+- Update .env with the ngrok URL: 
 
-[Learn more about Nx on CI](https://nx.dev/ci/intro/ci-with-nx#ready-get-started-with-your-provider?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+AI_SERVER_URL=https://abcd1234.ngrok-free.dev
 
-## Install Nx Console
+- Then run: 
 
-Nx Console is an editor extension that enriches your developer experience. It lets you run tasks, generate code, and improves code autocompletion in your IDE. It is available for VSCode and IntelliJ.
+```bash
+node apps/server/server.js
+```
 
-[Install Nx Console &raquo;](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+##  Helper Script: Running with 'start-dev.sh' (using just one terminal)
+Use a helper script that automates all three steps (copy and paste the code at the bottom of this MD file into your own start-dev.sh file, which belongs in the backend repo root).
 
-## Useful links
+1. Make it executable
 
-Learn more:
+```bash
+chmod +x start-dev.sh
+```
 
-- [Learn more about this workspace setup](https://nx.dev/nx-api/js?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects)
-- [Learn about Nx on CI](https://nx.dev/ci/intro/ci-with-nx?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Releasing Packages with Nx release](https://nx.dev/features/manage-releases?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [What are Nx plugins?](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+2. Run it: Two options
 
-And join the Nx community:
-- [Discord](https://go.nx.dev/community)
-- [Follow us on X](https://twitter.com/nxdevtools) or [LinkedIn](https://www.linkedin.com/company/nrwl)
-- [Our Youtube channel](https://www.youtube.com/@nxdevtools)
-- [Our blog](https://nx.dev/blog?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+```bash
+./start-dev.sh
+OR
+npm run be
+```
+
+3. What it does
+- Activates the Python venv and starts FastAPI ML server
+- Starts ngrok (or reuses an existing tunnel)
+- Fetches the ngrok public URL and writes it into .env
+- Starts the Node backend
+- Cleans up all processes on CTRL+C
+
+You’ll see logs like:
+
+Uvicorn running on http://127.0.0.1:8000
+Updated .env with https://abcd1234.ngrok-free.dev
+Server running on http://localhost:3000
+Press CTRL+C to stop everything. The script will clean up all processes.
+
+## Notes & Best Practices
+Do not hardcode ngrok URLs in .env. They change each time unless you have a paid reserved domain. The script updates .env automatically.
+
+Add .env to `.gitignore so each developer can have their own local tunnel.
+
+If you see ERR_NGROK_334 (endpoint already online), it means ngrok was already running. Kill it with the command below and then rerun the script:
+
+```bash
+pkill -f ngrok
+```
+
+For production, deploy FastAPI to a real host instead of ngrok.
+
+## Quick Recap
+Manual mode → 3 terminals (uvicorn, ngrok, Node).
+
+Script mode → 1 terminal (./start-dev.sh) does it all.
+
+.env is dynamically updated with the current ngrok URL.

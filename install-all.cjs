@@ -1,3 +1,12 @@
+/*
+ * Optional helper script.
+ * This script loops through all subfolders in /apps and runs `npm install`
+ * wherever a package.json is found. It’s just a convenience for monorepo setup.
+ *
+ * You don’t need to run this to test the app — you can simply `cd apps/server`
+ * and run `npm install` there. This script is here to show automation practices.
+ */
+
 const fs = require('fs');
 const path = require('path');
 const os = require('os');

@@ -50,7 +50,6 @@ const preCountDown = (io, roomCode, duration, room) => {
         if (timeLeft <= 0) {
           clearInterval(interval);
           io.to(roomCode).emit('round:ended');
-          // Trigger judging or put next-round setup here
         }
       }, 1000);
     }
@@ -203,7 +202,6 @@ export default function registerHandlers(io, socket) {
     try {
       const result = await judgeRoomSubmissions(roomCode, promptId);
 
-      // Broadcast the winner and scores to everyone in the room
       io.to(roomCode).emit('round-result', {
         prompt: result.prompt,
         winnerSocketId: result.winnerSocketId,

@@ -4,7 +4,6 @@ import { judgeDrawingsWithAI } from './utils/aiJudge.js';
 import fs from 'fs';
 import { io } from './server.js';
 
-// Load the JSON file manually
 const prompts = JSON.parse(
   fs.readFileSync(new URL('../shared/prompts.json', import.meta.url))
 );
@@ -12,7 +11,7 @@ const prompts = JSON.parse(
 export function createRoom(roomCode, hostId, nickname, avatar) {
   rooms[roomCode] = {
     host: hostId,
-    players: { [hostId]: { nickname, avatar } }, //{socketId: {nickname}}
+    players: { [hostId]: { nickname, avatar } },
     submissions: [],
     currentPrompt: '',
   };
@@ -34,7 +33,6 @@ export function leaveRoom(roomCode, socketId) {
   if (!room) return;
   delete room.players[socketId];
 
-  //remove room if empty
   if (Object.keys(rooms[roomCode].players).length === 0) {
     delete rooms[roomCode];
   }
@@ -75,11 +73,6 @@ export function clearSubmissions(roomCode) {
   room.submissions = [];
 }
 
-// Optional: expose rooms for debugging ONLY – remove in production
-export function _getRoom(roomCode) {
-  return rooms[roomCode];
-}
-
 export async function judgeRoomSubmissions(room) {
   const roomCode = Object.keys(rooms).find((key) => rooms[key] === room);
 
@@ -107,7 +100,6 @@ export async function judgeRoomSubmissions(room) {
     error: result.error,
   };
 
-  // The judge implementation from the 'main' branch includes emitting the results
   if (roomCode) {
     io.to(roomCode).emit('round-results', results);
   } else {
@@ -119,12 +111,9 @@ export function startNewRound(roomCode, duration = 30) {
   const room = rooms[roomCode];
   if (!room) return null;
 
-  // Reset round state
   room.submissions = [];
-  //room.scores = {};
   room.timeLeft = duration;
 
-  // Pick a new random prompt
   const randomPrompt = prompts[Math.floor(Math.random() * prompts.length)];
 
   return {
@@ -141,14 +130,13 @@ export function handlePlayerLeaving(roomCode, socketId) {
   if (!room) return null;
 
   if (room.host === socketId) {
-    // Host left → delete room
     delete rooms[roomCode];
     return { roomClosed: true };
   }
-  // Regular player leaves
+
   delete room.players[socketId];
 
-  // If room is now empty after player leaves, delete it
+
   if (Object.keys(room.players).length === 0) {
     delete rooms[roomCode];
     return { roomClosed: true };

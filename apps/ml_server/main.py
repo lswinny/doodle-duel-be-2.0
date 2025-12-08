@@ -40,7 +40,7 @@ def generate_category_prompts(subject: str) -> tuple[list[str], dict]:
     "medium_low": [
         f"a rough sketch of {subject}",
         f"a simple drawing of {subject}",
-        f"a doodle of {subject}",           # ONLY ADDITION
+        f"a doodle of {subject}",
     ],
     "low": [
         f"something like {subject}",
