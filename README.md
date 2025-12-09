@@ -1,6 +1,6 @@
 # Doodle Duel Backend
 
-This backend powers **Doodle Duel**, a real-time multiplayer drawing game with AI scoring. It consists of two services that run together:
+This is the backend for Doodle Duel, a real-time multiplayer drawing game with AI scoring. It consists of two services that run together:
 
 - **Node.js Server** (`apps/server`) — manages players, rooms, and real-time events via Socket.IO.
 - **FastAPI ML Server** (`apps/ml_server`) — evaluates submitted doodles using AI and returns scores.
