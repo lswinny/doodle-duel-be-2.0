@@ -6,9 +6,20 @@ This is the backend for Doodle Duel, a real-time multiplayer drawing game with A
 - **FastAPI ML Server** (`apps/ml_server`) — evaluates submitted doodles using AI and returns scores.
 - **ngrok tunnel** — bridges the ML server to the Node backend in local development.
 
-### AI Judge (Experimental)
+## AI Judge (Experimental)
 
 This project includes an AI-based image judge. In practice, the model does not currently produce accurate results, but it was valuable to experiment with integrating AI into the workflow. The feature is kept in the repo to demonstrate exploration of AI-driven scoring and sanitisation.
+
+##  Tech Stack
+
+- Node.js – backend runtime  
+- Express – web framework  
+- Socket.IO – real‑time events  
+- Python – ML service runtime  
+- FastAPI – ML server framework  
+- ngrok – local tunneling  
+- GitHub Actions – CI/CD  
+- Bash – helper scripts
 
 ## Folder Structure
 
@@ -47,7 +58,6 @@ This guide explains how to set up and run the ML server, ngrok tunnel, and Node 
 - **ngrok** installed (sign up at [ngrok.com](https://ngrok.com) and download the CLI)
 - A working **virtual environment** (`.venv`) for Python, located in apps/ml_server/.venv.
 Activate it before running the ML server.
-
 
 ---
 
