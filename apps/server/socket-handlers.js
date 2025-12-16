@@ -152,6 +152,11 @@ export default function registerHandlers(io, socket) {
     }
 
     preCountDown(io, roomCode, data.duration, data.room);
+
+    io.to(roomCode).emit('next-round-started', {
+      roomCode, 
+      roomData: data.room
+    });
   });
 
   socket.on('disconnect', () => {
