@@ -179,3 +179,7 @@ Manual mode → 3 terminals (uvicorn, ngrok, Node).
 Script mode → 1 terminal (./start-dev.sh) does it all.
 
 .env is dynamically updated with the current ngrok URL.
+
+## About This Project
+
+This portfolio project was created as part of a Digital Skills Bootcamp in Software Development provided by [Northcoders](https://northcoders.com/)
