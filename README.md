@@ -6,6 +6,10 @@ This is the backend for Doodle Duel, a real-time multiplayer drawing game with A
 - **FastAPI ML Server** (`apps/ml_server`) — evaluates submitted doodles using AI and returns scores.
 - **ngrok tunnel** — bridges the ML server to the Node backend in local development.
 
+## Fronend repo and screenshots
+For screenshots, gameplay flow, and a visual walkthrough, see the frontend repo: 
+https://github.com/lswinny/doodle-duel-fe-2.0
+
 ## AI Judge (Experimental)
 
 This project includes an AI-based image judge. In practice, the model does not currently produce accurate results, but it was valuable to experiment with integrating AI into the workflow. The feature is kept in the repo to demonstrate exploration of AI-driven scoring and sanitisation.
