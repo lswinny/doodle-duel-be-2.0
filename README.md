@@ -27,29 +27,30 @@ This project includes an AI-based image judge. In practice, the model does not c
 
 ## Folder Structure
 
+```
 Backend/ 
 ├── README.md # General backend overview 
 ├── README-ML-Server.md # ML server specific notes 
 ├── apps/ 
-│ ├── server/  -   Node.js + Socket.IO backend 
-│ │ ├── app.js    -   Express app setup
-│ │ ├── server.js    -   Entry point
-│ │ ├── controllers/    -   Route handlers 
-│ │ ├── middleware/  -   Express middleware 
-│ │ ├── socket-handlers.js   -  Socket.IO event logic
-│ │ ├── roomManager.js  -  Room state management
-│ │ └── utils/    -   Helper functions 
-│ ├── ml_server/  -   FastAPI ML server 
-│ │ ├── main.py   -  FastAPI app entry point
-│ │ └── requirements.txt   -  Python dependencies
+│ ├── server/                 -   Node.js + Socket.IO backend 
+│ │ ├── app.js                -   Express app setup
+│ │ ├── server.js             -   Entry point
+│ │ ├── controllers/          -   Route handlers 
+│ │ ├── middleware/           -   Express middleware 
+│ │ ├── socket-handlers.js    -  Socket.IO event logic
+│ │ ├── roomManager.js        -  Room state management
+│ │ └── utils/                -   Helper functions 
+│ ├── ml_server/              -   FastAPI ML server 
+│ │ ├── main.py               -  FastAPI app entry point
+│ │ └── requirements.txt      -  Python dependencies
 │ └── shared/
-│ └── prompts.json   -   AI scoring prompts 
-├── start-dev.sh  -   Helper script to run ML + ngrok + Node 
-├── install-all.cjs  -   Install helper 
-├── workflows/ci.yml    -   CI pipeline 
-└── package.json  -   Root dependencies
+│ └── prompts.json            -   AI scoring prompts 
+├── start-dev.sh              -   Helper script to run ML + ngrok + Node 
+├── install-all.cjs           -   Install helper 
+├── workflows/ci.yml          -   CI pipeline 
+└── package.json              -   Root dependencies
 
----
+```
 
 # Development Setup: FastAPI ML Server + ngrok + Node Backend
 
